@@ -1,6 +1,7 @@
 import logging
 import json
 import openai
+import telegram
 from telegram import Update
 from telegram.ext import filters, ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler
 GEN_TEXT = 0
@@ -30,7 +31,7 @@ async def select_gen_img(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handleMess(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global usersPending, usersStatus, messagesByUserId
     userId = update.effective_chat.id
-    print(usersPending)
+    print("User " + str(userId) + " send " + update.message.text)
     if (userId in usersPending and usersPending[userId] == 1):
         await context.bot.send_message(chat_id=userId, text= "Chờ tí đi, câu trước còn đang nghĩ chưa trả lời xong mà :((")
         return
@@ -65,7 +66,13 @@ async def gen_text(userId, user_message, context: ContextTypes.DEFAULT_TYPE):
         "role": newMessage.role,
         "content": newMessage.content
     })
-    await context.bot.send_message(chat_id=userId, text = newMessage.content)
+    try:
+        await context.bot.send_message(chat_id=userId, text = newMessage.content, parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
+    except:
+        try:
+            await context.bot.send_message(chat_id=userId, text = newMessage.content, parse_mode=telegram.constants.ParseMode.MARKDOWN)
+        except:
+            await context.bot.send_message(chat_id=userId, text = newMessage.content)
     if (len(messages) > 20):
         messages.pop(0)
         messages.pop(0)
