@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 import openai
 import telegram
 from telegram import Update
@@ -86,8 +87,14 @@ async def gen_img(userId, user_message, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(chat_id=userId, photo = response['data'][0]['url'])
 
 if __name__ == '__main__':
-    openai.api_key = "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"
-    application = ApplicationBuilder().token('6068277181:AAGVmQYR4rRB0zRk-jsDNryusVMiCRKSlCQ').build()
+    OPENAI_KEY = os.getenv("OPENAI_KEY")
+    TELEGRAM_BOT_KEY = os.environ.get("TELEGRAM_BOT_KEY")
+    if not OPENAI_KEY:
+        raise Exception("Env OPENAI_KEY is not defined")
+    if not TELEGRAM_BOT_KEY:
+        raise Exception("Env TELEGRAM_BOT_KEY is not defined")
+    openai.api_key = OPENAI_KEY
+    application = ApplicationBuilder().token(TELEGRAM_BOT_KEY).build()
     
     mess_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), handleMess)
     start_handler = CommandHandler('start', start)
